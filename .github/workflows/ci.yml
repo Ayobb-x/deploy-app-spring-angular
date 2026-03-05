@@ -10,37 +10,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '11'
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Build Spring Boot JAR
-        run: |
-          cd springboot/app
-          mvn clean package -DskipTests
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build Spring Boot project
+      run: |
+        cd springboot/app
+        mvn clean package -DskipTests
 
-      - name: Build backend image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/spring-app:latest ./springboot/app
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build frontend image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/angular-app:latest ./angular-app
+    - name: Build Backend Image
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/spring-app:latest ./springboot/app
 
-      - name: Push backend image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/spring-app:latest
+    - name: Build Frontend Image
+      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/angular-app:latest ./angular-app
 
-      - name: Push frontend image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-app:latest
+    - name: Push Backend Image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/spring-app:latest
 
-      - name: Run docker compose
-        run: docker-compose up -d
+    - name: Push Frontend Image
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/angular-app:latest
+
+    - name: Run docker compose
+      run: docker-compose up -d
